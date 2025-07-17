@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  traffic-analyzer:
+    build: .
+    image: traffic-analyzer:latest
+    container_name: traffic-analyzer
+    volumes:
+      # Mount data directory for input files
+      - ./data:/app/data:ro
+      # Mount output directory for results
+      - ./output:/app/output
+      # Optional: Mount additional log files
+      - ./logs:/app/logs:ro
+    environment:
+      - PYTHONPATH=/app
+    # Override default command
+    # command: ["data/samples/test_sample_100.log"]
+    
+  # Optional: Add a web viewer service
+  # web-viewer:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "8080:80"
+  #   volumes:
+  #     - ./output:/usr/share/nginx/html:ro
+  #   depends_on:
+  #     - traffic-analyzer
+  scheduler:
+    build: .
+    container_name: bot-analyzer-scheduler
+    volumes:
+      - ./logs:/app/logs:ro
+      - ./output:/app/output
+      - ./scripts:/app/scripts:ro
+    environment:
+      - PYTHONPATH=/app
+    # Add cron job or scheduling logic here
+    command: /bin/bash -c "while true; do sleep 3600; done"
